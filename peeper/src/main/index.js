@@ -44,6 +44,18 @@ app.on('activate', () => {
   }
 })
 
+const ipcMain = require('electron').ipcMain
+ipcMain.on('capture-zone', () => {
+  console.log('capture zone')
+  let captureWindow = new BrowserWindow({
+    height: 500,
+    width: 500,
+    useContentSize: false,
+    frame: false,
+    transparent: true
+  })
+})
+
 /**
  * Auto Updater
  *

@@ -17,6 +17,7 @@
             internal configurations, using the project structure, building your application,
             and so much more.
           </p>
+          <button @click="createWindow()">Capture</button><br><br>
           <button @click="open('https://simulatedgreg.gitbooks.io/electron-vue/content/')">Read the Docs</button><br><br>
         </div>
         <div class="doc">
@@ -38,9 +39,16 @@
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
+      },
+      createWindow() {
+        const ipcRenderer = require('electron').ipcRenderer
+        console.log("create")
+        ipcRenderer.send('capture-zone')
       }
     }
   }
+
+
 </script>
 
 <style>
