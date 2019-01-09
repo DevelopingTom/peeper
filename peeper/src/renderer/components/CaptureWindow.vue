@@ -1,10 +1,12 @@
 <template>
-  <div id="content"  @click="drag()" >
+  <div id="content"  >
     <div id="decoration">
-      <div id="close-button">x</div>
-      <div id="maximize-button">m</div>
-      <div id="reduce-button">_</div>
-    </div> 
+      <div id="drag">
+      </div>
+      <div id="buttonContainer" @click="drag()">
+        <div class="btn" id="close-button">x</div><div class="btn" id="maximize-button">m</div><div class="btn" id="reduce-button">_</div>
+      </div>
+    </div>
     <div id="svg-wrapper">
       <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
         <rect class="shape" height="100%" width="100%" />
@@ -13,7 +15,7 @@
   </div>
 </template>
 
-<script defer>
+<script >
   export default {
     name: 'capture-window',
     methods: {
@@ -56,25 +58,43 @@
   .click-through {pointer-events: none}
 
   #decoration{
-    -webkit-app-region: drag;
     background: #FFFFFF;
+    display: flex;
     height: 30px;
     width: 100%;
     margin-bottom: -1px;
   }
+  #drag{
+    -webkit-app-region: drag;
+    flex-grow: 1;
+  }
+  #buttonContainer {
+    background: red
+  }
 
-  #decoration div{
+  #decoration #buttonContainer{
     float: right;
-    height: 20px;
-    width: 30px;
     padding: 0;
     margin: 0;
+  }
+  .btn {
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+    height: 100%;
+    color: white;
+    background: #C9C9C9;
+  }
+
+  .btn:hover {
+    background: white;
+    color: black;
   }
 
   #svg-wrapper {
     position: relative;
     margin: 0 auto;
-    height: calc(100% - 30px);  
+    height: calc(100% - 30px);
   }
 
   .shape {
