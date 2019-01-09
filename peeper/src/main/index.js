@@ -10,7 +10,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
+  ? `http://localhost:9080/`
   : `file://${__dirname}/index.html`
 
 function createWindow () {
@@ -51,9 +51,27 @@ ipcMain.on('capture-zone', () => {
     height: 500,
     width: 500,
     useContentSize: false,
+    show: false,
     frame: false,
-    transparent: true
+    transparent: true,
+    vibrancy: 'ultra-dark',
+    devtools: false,
+    alwaysOnTop: true
   })
+  captureWindow.loadURL(`http://localhost:9080/#/capture`)
+  captureWindow.once('ready-to-show', () => {
+    captureWindow.show()
+  })
+
+  function computeRects(){
+    let rect = captureWindow.webContents.getOwnerBrowserWindow().getBounds()
+    return [
+      {x: 0, y: 0, width: 1920, height: 30},
+      {x: 0, y: 0, width: 3, height: rect.height},
+      {x: 0, y: rect.height - 3, width: rect.width, height: 3},
+      {x: rect.width - 3, y: 0, width: 3, height: rect.height}
+    ]
+  }
 })
 
 /**

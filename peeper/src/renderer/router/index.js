@@ -11,6 +11,11 @@ export default new Router({
       component: require('@/components/LandingPage').default
     },
     {
+      path: '/capture',
+      name: 'capture-window',
+      component: require('@/components/CaptureWindow').default
+    },
+    {
       path: '*',
       redirect: '/'
     }
