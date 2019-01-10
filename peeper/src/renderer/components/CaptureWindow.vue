@@ -3,8 +3,35 @@
     <div id="decoration">
       <div id="drag"  @click="drag()">
       </div>
-      <div id="buttonContainer" @click="drag()">
-        <div class="btn" id="close-button">x</div><div class="btn" id="maximize-button">m</div><div class="btn" id="reduce-button">_</div>
+      <div id="buttonContainer">
+        <div class="btn" id="reduce-button" @click="reduce()" >
+          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <line stroke-width="1" stroke="#555555" x1="0" y1="7.5" x2="10" y2="7.5"> </line>
+            </g>
+          </svg>
+        </div><div class="btn maximize" id="maximize-button" @click="maximize()">
+          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
+            <g class="toggleIcon active" id="maximizeIcon">
+              <rect stroke-width="1.5" stroke="#555555" height="10" width="10" y="0" x="0" fill="none"></rect>
+            </g>
+            <g class="toggleIcon" id="minimizeIcon">
+              <mask id="myMask">
+                  <rect height="10" width="10" y="0" x="2"  fill="white" ></rect>
+                  <rect height="7.5" width="7.5" y="2.5" x="0" fill="black"></rect>
+               </mask>
+              <rect stroke-width="1.5" stroke="#555555" height="7.5" width="7.5" y="2.5" x="0" fill="none"></rect>
+              <rect stroke-width="1.5" stroke="#555555" height="7.5" width="7.5" y="0" x="2.5" fill="none" mask="url(#myMask)"></rect>
+            </g>
+          </svg>
+        </div><div class="btn" id="close-button" @click="close()">
+          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <line stroke-width="1" stroke="#555555" x1="0" y1="0" x2="10" y2="10"> </line>
+              <line stroke-width="1" stroke="#555555" x1="0" y1="10" x2="10" y2="0"> </line>
+            </g>
+          </svg>
+        </div>
       </div>
     </div>
     <div id="svg-wrapper">
@@ -29,12 +56,25 @@
     methods: {
       drag : function(){
         console.log("drag")
-        document.getElementById("svg-wrapper").classList.add('dragging');
-        document.getElementById("drag").classList.add('test');
+        document.getElementById("svg-wrapper").classList.add('dragging')
       },
       drop : function(){
         console.log("drop")
-        document.getElementById("svg-wrapper").classList.remove('dragging');
+        document.getElementById("svg-wrapper").classList.remove('dragging')
+      },
+      maximize : function(){
+        console.log("maximize")
+        document.getElementById("maximizeIcon").classList.toggle('active')
+        document.getElementById("minimizeIcon").classList.toggle('active')
+        ipcRenderer.send('maximize-window', {'maximized': document.getElementById("minimizeIcon").classList.contains('active')})
+      },
+      reduce : function(){
+        console.log("reduce")
+        ipcRenderer.send('reduce-window')
+      },
+      close : function(){
+        console.log("close")
+        ipcRenderer.send('close-window')
       }
     }
   }
@@ -48,11 +88,25 @@
     margin: 0;
     padding: 0;
   }
+  .toggleIcon:not(.active) {
+    visibility: hidden;
+  }
+  .toggleIcon .active {
+    visibility: visible;
+  }
   #content{
     height: 100%;
     width: 100%;
   }
-
+  #close-button:hover{
+    background: #FF3333;
+  }
+  #close-button:hover line{
+    stroke: white;
+  }
+  .btn:hover line, .btn:hover rect{
+    stroke: black;
+  }
   #app{
     height: 100%;
   }
@@ -72,6 +126,7 @@
     display: flex;
     height: 30px;
     filter: drop-shadow(2px 1px 2px rgba(0,0,0,0.5));
+    user-select: none;
     width: 100%;
     margin-bottom: -5px;
     position: relative;
@@ -91,14 +146,16 @@
     float: right;
     padding: 0;
     margin: 0;
+    line-height: 26px;
   }
 
   .btn {
     display: inline-block;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 18px;
+    padding-right: 18px;
     height: 100%;
     color: rgba(0,0,0,0.7);
+    transition: background 0.2s;
   }
 
   .btn:hover {
@@ -127,8 +184,6 @@
   }
   .shadow {
     filter: drop-shadow(1px 1px 2px rgba(0,0,0,1));
-    /*border: 1px solid rgba(0,0,0,0.5);*/
-    /* Similar syntax to box-shadow */
   }
 
   .dragging{
