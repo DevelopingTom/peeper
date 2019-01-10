@@ -42,7 +42,6 @@
       },
       createWindow() {
         const ipcRenderer = require('electron').ipcRenderer
-        console.log("create")
         ipcRenderer.send('capture-zone')
       }
     }

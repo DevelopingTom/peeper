@@ -16,6 +16,9 @@
 </template>
 
 <script >
+  const ipcRenderer = require("electron").ipcRenderer
+  ipcRenderer.on("window-move", () => { console.log("moving")})
+
   export default {
     name: 'capture-window',
     methods: {
@@ -54,8 +57,6 @@
     background: rgba(0, 0, 0, 0);
     overflow: hidden;
   }
-  .click-on      {pointer-events: all}
-  .click-through {pointer-events: none}
 
   #decoration{
     background: #FFFFFF;
@@ -64,10 +65,12 @@
     width: 100%;
     margin-bottom: -1px;
   }
+
   #drag{
     -webkit-app-region: drag;
     flex-grow: 1;
   }
+  
   #buttonContainer {
     background: red
   }
@@ -77,6 +80,7 @@
     padding: 0;
     margin: 0;
   }
+
   .btn {
     display: inline-block;
     padding-left: 15px;

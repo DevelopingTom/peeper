@@ -26,26 +26,26 @@ function createWindow () {
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
-    mainWindow = null
+      mainWindow = null
+    })
+  }
+
+  app.on('ready', createWindow)
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
   })
-}
 
-app.on('ready', createWindow)
+  app.on('activate', () => {
+    if (mainWindow === null) {
+      createWindow()
+    }
+  })
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow()
-  }
-})
-
-const ipcMain = require('electron').ipcMain
-ipcMain.on('capture-zone', () => {
+  const ipcMain = require('electron').ipcMain
+  ipcMain.on('capture-zone', () => {
   console.log('capture zone')
   let captureWindow = new BrowserWindow({
     height: 500,
@@ -58,9 +58,15 @@ ipcMain.on('capture-zone', () => {
     devtools: false,
     alwaysOnTop: true
   })
+
   captureWindow.loadURL(`http://localhost:9080/#/capture`)
+
   captureWindow.once('ready-to-show', () => {
     captureWindow.show()
+  })
+
+  captureWindow.on('move', (e) =>{
+    captureWindow.webContents.send('window-move')
   })
 
   function computeRects(){
