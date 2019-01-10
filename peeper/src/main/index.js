@@ -74,6 +74,25 @@ ipcMain.on('capture-zone', () => {
   }
 })
 
+
+ipcMain.on('maximize-window', (event, data) => {
+  console.log(data)
+   let eventWindow = event.sender.getOwnerBrowserWindow()
+    if (!data['maximized']) {
+       eventWindow.unmaximize()
+    } else {
+       eventWindow.maximize()
+    }
+
+})
+
+ipcMain.on('reduce-window', (event) => {
+    event.sender.getOwnerBrowserWindow().minimize()
+})
+ipcMain.on('close-window', (event) => {
+   event.sender.getOwnerBrowserWindow().close()
+})
+
 /**
  * Auto Updater
  *
