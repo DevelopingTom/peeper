@@ -16,8 +16,13 @@
 </template>
 
 <script >
+  var timer;
   const ipcRenderer = require("electron").ipcRenderer
-  ipcRenderer.on("window-move", () => { console.log("moving")})
+  ipcRenderer.on("window-move", () => { 
+    clearTimeout(timer)
+    timer = setTimeout(()=>{document.getElementById("svg-wrapper").classList.remove('dragging');}, 300)
+    document.getElementById("svg-wrapper").classList.add('dragging');
+  })
 
   export default {
     name: 'capture-window',
@@ -60,15 +65,17 @@
   }
 
   #decoration{
-    background: #FFFFFF;
+    background: white;
     border-top: 1px solid #48b0da;
     border-left: 1px solid #48b0da;
     border-right: 1px solid #48b0da;
     display: flex;
     height: 30px;
-    filter: drop-shadow(1px 1px 1px rgba(0,0,0,1));
+    filter: drop-shadow(2px 1px 2px rgba(0,0,0,0.5));
     width: 100%;
-    margin-bottom: -1px;
+    margin-bottom: -5px;
+    position: relative;
+    z-index: 1000;
   }
 
   #drag{
@@ -123,9 +130,28 @@
     /*border: 1px solid rgba(0,0,0,0.5);*/
     /* Similar syntax to box-shadow */
   }
+
   .dragging{
-    background-image: linear-gradient(45deg, #98CD8D 25%, #F6F0CF 25%, #F6F0CF 50%, #98CD8D 50%, #98CD8D 75%, #F6F0CF 75%, #F6F0CF 100%);
-    background-size: 56.57px 56.57px;
+    background: -webkit-repeating-linear-gradient(
+      -45deg, 
+      transparent, 
+      transparent 1rem,
+      rgba(255, 255, 255, 0.05) 1rem,
+      rgba(255, 255, 255, 0.05) 2rem
+    );
+    background-size: 200% 200%;
+
+    -webkit-animation-name: barberpole;
+    -webkit-animation-duration: 15s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
   }
+
+@keyframes barberpole {
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
 
 </style>
