@@ -1,6 +1,6 @@
 <template>
   <div id="content"  >
-    <div id="decoration">
+    <div id="decoration" class="click-on">
       <div id="drag"  @click="drag()">
       </div>
       <div id="buttonContainer">
@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div id="svg-wrapper">
+    <div id="svg-wrapper" class="click-through">
       <svg height="100%" width="100%" class="shadow" xmlns="http://www.w3.org/2000/svg">
         <rect id="shape"  height="100%" width="100%" />
       </svg>
@@ -42,15 +42,19 @@
   </div>
 </template>
 
-<script >
+<script defer>
   var timer;
   const ipcRenderer = require("electron").ipcRenderer
-  ipcRenderer.on("window-move", () => { 
+  ipcRenderer.on("window-move", () => {
     clearTimeout(timer)
     timer = setTimeout(()=>{document.getElementById("svg-wrapper").classList.remove('dragging');}, 300)
     document.getElementById("svg-wrapper").classList.add('dragging');
   })
-
+  const TransparencyMouseFix = require('electron-transparency-mouse-fix')
+  const fix = new TransparencyMouseFix({
+    log: true,
+    fixPointerEvents: 'auto'
+  })
   export default {
     name: 'capture-window',
     methods: {
@@ -82,7 +86,8 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
-
+  .click-on      {pointer-events: all}
+  .click-through {pointer-events: none}
   * {
     box-sizing: border-box;
     margin: 0;
@@ -137,7 +142,7 @@
     -webkit-app-region: drag;
     flex-grow: 1;
   }
-  
+
   #buttonContainer {
     /*background: red*/
   }
@@ -188,8 +193,8 @@
 
   .dragging{
     background: -webkit-repeating-linear-gradient(
-      -45deg, 
-      transparent, 
+      -45deg,
+      transparent,
       transparent 1rem,
       rgba(255, 255, 255, 0.05) 1rem,
       rgba(255, 255, 255, 0.05) 2rem
