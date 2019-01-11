@@ -50,6 +50,8 @@ function createWindow () {
   let captureWindow = new BrowserWindow({
     height: 500,
     width: 500,
+    minWidth: 150,
+    minHeight: 100,
     useContentSize: false,
     show: false,
     frame: false,

@@ -11,7 +11,7 @@
             </g>
           </svg>
         </div><div class="btn maximize" id="maximize-button" @click="maximize()">
-          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
+          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
             <g class="toggleIcon active" id="maximizeIcon">
               <rect stroke-width="1.5" stroke="#555555" height="10" width="10" y="0" x="0" fill="none"></rect>
             </g>
@@ -25,7 +25,7 @@
             </g>
           </svg>
         </div><div class="btn" id="close-button" @click="close()">
-          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
+          <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg" >
             <g>
               <line stroke-width="1" stroke="#555555" x1="0" y1="0" x2="10" y2="10"> </line>
               <line stroke-width="1" stroke="#555555" x1="0" y1="10" x2="10" y2="0"> </line>
@@ -38,6 +38,9 @@
       <svg height="100%" width="100%" class="shadow" xmlns="http://www.w3.org/2000/svg">
         <rect id="shape"  height="100%" width="100%" />
       </svg>
+      <div class="invisibleControl click-on" id="barLeft"></div>
+      <div class="invisibleControl click-on" id="barBottom"></div>
+      <div class="invisibleControl click-on" id="barRight"></div>
     </div>
   </div>
 </template>
@@ -53,7 +56,7 @@
   const TransparencyMouseFix = require('electron-transparency-mouse-fix')
   const fix = new TransparencyMouseFix({
     log: true,
-    fixPointerEvents: 'auto'
+    fixPointerEvents: 'force'
   })
   export default {
     name: 'capture-window',
@@ -86,12 +89,35 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
-  .click-on      {pointer-events: all}
-  .click-through {pointer-events: none}
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+  }
+  .click-on      {pointer-events: all}
+  .click-through {pointer-events: none}
+  .invisibleControl{
+    position: absolute;
+    display: block;
+  }
+  .invisibleControl:hover {
+    /*background: rgba(255,0,0,0.5);*/
+  }
+  #barLeft.invisibleControl, #barRight.invisibleControl {
+    width: 10px;
+    height: 100%;
+    top: 0;
+  }
+  #barBottom.invisibleControl{
+    bottom: -10px;
+    width: 100%;
+    height: 20px;
+  }
+  #barLeft.invisibleControl{
+    left: -1px;
+  }
+  #barRight.invisibleControl{
+    right: -2px;
   }
   .toggleIcon:not(.active) {
     visibility: hidden;
@@ -134,6 +160,7 @@
     user-select: none;
     width: 100%;
     margin-bottom: -5px;
+    padding-bottom: 1px;
     position: relative;
     z-index: 1000;
   }
