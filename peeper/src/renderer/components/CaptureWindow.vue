@@ -3,7 +3,7 @@
     <div id="decoration" class="click-on">
       <div id="drag"  @click="drag()">
       </div>
-      <div id="buttonContainer">
+      <div id="button-container">
         <div class="btn" id="reduce-button" @click="reduce()" >
           <svg height="10" width="10" xmlns="http://www.w3.org/2000/svg">
             <g>
@@ -42,6 +42,18 @@
       <div class="invisibleControl click-on" id="barBottom"></div>
       <div class="invisibleControl click-on" id="barRight"></div>
     </div>
+
+    <div id="resize-corner" class="click-on">
+      <svg width="30" height="30">
+        <circle class="resize-circle third-row"  cx="20"  cy="4"  r="0"/>
+        <circle class="resize-circle third-row"  cx="12"  cy="12" r="0"/>
+        <circle class="resize-circle second-row" cx="20"  cy="12" r="0"/>
+        <circle class="resize-circle third-row"  cx="4"   cy="20" r="0"/>
+        <circle class="resize-circle second-row" cx="12"  cy="20" r="0"/>
+        <circle class="resize-circle first-row"  cx="20"  cy="20" r="0"/>
+      </svg>
+    </div>
+
   </div>
 </template>
 
@@ -170,11 +182,11 @@
     flex-grow: 1;
   }
 
-  #buttonContainer {
+  #button-container {
     /*background: red*/
   }
 
-  #decoration #buttonContainer{
+  #decoration #button-container{
     float: right;
     padding: 0;
     margin: 0;
@@ -214,6 +226,7 @@
     stroke-width: 1px;
     stroke-dashoffset: 50px;
   }
+
   .shadow {
     filter: drop-shadow(1px 1px 2px rgba(0,0,0,1));
   }
@@ -234,11 +247,41 @@
     -webkit-animation-iteration-count: infinite;
   }
 
-@keyframes barberpole {
-  100% {
-    background-position: 100% 100%;
+  @keyframes barberpole {
+    100% {
+      background-position: 100% 100%;
+    }
   }
-}
 
+  #resize-corner{
+    position: fixed;
+    right: 2px;
+    bottom: 8px;
+    width: 30px;
+    height: 30px;
+  }
 
+  .resize-circle{
+    fill: transparent;
+    stroke: white;
+    stroke-width: 1px;
+    stroke-dasharray: 0px;
+    transition: r 0.1s, stroke-dasharray 0.9s, stroke-width 0.3s;
+  }
+
+  #resize-corner:hover .resize-circle{
+    r: 3px;
+  }
+
+  .first-row{
+    transition-delay: 0s;
+  }
+
+  .second-row{
+    transition-delay: 0.05s;
+  }
+
+  .third-row{
+    transition-delay: 0.1s;
+  }
 </style>
