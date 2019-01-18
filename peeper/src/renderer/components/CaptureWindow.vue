@@ -1,6 +1,7 @@
 <template>
   <div id="content"  >
     <div id="decoration" class="click-on">
+
       <div id="drag"  @click="drag()">
       </div>
       <div id="button-container">
@@ -70,7 +71,26 @@
     log: true,
     fixPointerEvents: 'force'
   })
+  let mouseDown = false
+  window.addEventListener('load', function () {
+    document.getElementById('resize-corner').onmousedown = function(e) {
+      mouseDown = true
+    }
+    document.getElementById('resize-corner').onmousemove = function(e) {
+      if (mouseDown) {
+        ipcRenderer.send('resize-window', {screenX: e.screenX, screenY: e.screenY, pageX: e.pageX, pageY: e.pageY})
+      }
+    }
+
+    document.addEventListener ('mouseup',   mouseupListener);
+    function mouseupListener (e) {
+      console.log('upppppp')
+      mouseDown = false
+    }
+
+  }, false);
   export default {
+
     name: 'capture-window',
     methods: {
       drag : function(){
@@ -259,6 +279,7 @@
     bottom: 8px;
     width: 30px;
     height: 30px;
+    cursor: nwse-resize;
   }
 
   .resize-circle{
