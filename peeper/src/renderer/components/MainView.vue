@@ -32,20 +32,6 @@
         <div @click="createWindow" class="chatControls"><i class="material-icons">aspect_ratio</i></div>
       </div></div>
       </div>
-      <div class="sidenav" id="firstLeftBar">
-        <div class="control" id="resizeSideBar"></div>
-        <div class="title">Projects</div>
-        <div class="group" id="projects">
-          <div class="project">About</div>
-          <div class="project">Services</div>
-          <div class="project">Clients</div>
-          <div class="project">Contact</div>
-        </div>
-        <div class="title">Users List</div>
-        <div class="group" >
-          <user id="user-list" v-for="user in users" v-bind:user="user"></user>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -54,7 +40,6 @@
   import User from './MainView/User'
   import Message from './MainView/Message'
   import tippy from 'tippy.js'
-  import 'tippy.js/dist/tippy.css'
 
   let mouseDown = false
   let diffMargin = 0

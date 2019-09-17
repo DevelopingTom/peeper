@@ -95,8 +95,6 @@
     display: flex;
     font-size: 12px;
   }
-  .metaContainer .authorName{
-  }
   .metaContainer .metaContent{
     color: grey;
     margin-left: 5px;

@@ -59,38 +59,39 @@
 </template>
 
 <script defer>
+  const electron = require('electron')
   var timer;
-  const ipcRenderer = require("electron").ipcRenderer
+  const ipcRenderer = electron.ipcRenderer
   ipcRenderer.on("window-move", () => {
     clearTimeout(timer)
     timer = setTimeout(()=>{document.getElementById("svg-wrapper").classList.remove('dragging');}, 300)
     document.getElementById("svg-wrapper").classList.add('dragging');
   })
-  const TransparencyMouseFix = require('electron-transparency-mouse-fix')
-  const fix = new TransparencyMouseFix({
-    log: true,
-    fixPointerEvents: 'force'
-  })
-  let mouseDown = false
-  window.addEventListener('load', function () {
-    document.getElementById('resize-corner').onmousedown = function(e) {
-      mouseDown = true
-    }
-    document.getElementById('resize-corner').onmousemove = function(e) {
-      if (mouseDown) {
-        ipcRenderer.send('resize-window', {screenX: e.screenX, screenY: e.screenY, pageX: e.pageX, pageY: e.pageY})
-      }
-    }
-
-    document.addEventListener ('mouseup',   mouseupListener);
-    function mouseupListener (e) {
-      console.log('upppppp')
-      mouseDown = false
-    }
-
-  }, false);
   export default {
-
+    mounted: function() {
+      
+      console.log('mounted')
+      
+      let mouseDown = false
+      const TransparencyMouseFix = require('electron-transparency-mouse-fix')
+      const fix = new TransparencyMouseFix({
+        log: true,
+        fixPointerEvents: 'auto'
+      })
+      document.getElementById('resize-corner').onmousedown = function(e) {
+        mouseDown = true
+      }
+      document.getElementById('resize-corner').onmousemove = function(e) {
+        if (mouseDown) {
+          ipcRenderer.send('resize-window', {screenX: e.screenX, screenY: e.screenY, pageX: e.pageX, pageY: e.pageY})
+        }
+      }
+      document.addEventListener ('mouseup',   mouseupListener);
+      function mouseupListener (e) {
+        console.log('upppppp')
+        mouseDown = false
+      }
+    },
     name: 'capture-window',
     methods: {
       drag : function(){

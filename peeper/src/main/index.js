@@ -20,33 +20,35 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000
+    width: 1000,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
-      mainWindow = null
-    })
+    mainWindow = null
+  })
+}
+
+app.on('ready', createWindow)
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
   }
+})
 
-  app.on('ready', createWindow)
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow()
+  }
+})
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
-  })
-
-  app.on('activate', () => {
-    if (mainWindow === null) {
-      createWindow()
-    }
-  })
-
-  const ipcMain = require('electron').ipcMain
-  ipcMain.on('capture-zone', () => {
-  console.log('capture zone')
+const ipcMain = require('electron').ipcMain
+ipcMain.on('capture-zone', () => {
   let captureWindow = new BrowserWindow({
     height: 500,
     width: 500,
@@ -58,7 +60,10 @@ function createWindow () {
     transparent: true,
     vibrancy: 'ultra-dark',
     devtools: false,
-    alwaysOnTop: true
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   captureWindow.loadURL(`http://localhost:9080/#/capture`)
@@ -85,14 +90,24 @@ function createWindow () {
 
 ipcMain.on('maximize-window', (event, data) => {
   console.log(data)
-   let eventWindow = event.sender.getOwnerBrowserWindow()
-    if (!data['maximized']) {
-       eventWindow.unmaximize()
-    } else {
-       eventWindow.maximize()
-    }
-
+  let eventWindow = event.sender.getOwnerBrowserWindow()
+  if (!data['maximized']) {
+    eventWindow.unmaximize()
+  } else {
+    eventWindow.maximize()
+  }
 })
+ipcMain.on('resize-window', (event, data) =>{
+  let eventWindow = event.sender.getOwnerBrowserWindow()
+  let windowX = eventWindow.getPosition()[0]
+  let windowY = eventWindow.getPosition()[1]
+  let windowWidth = eventWindow.getSize()[0]
+  let windowHeight = eventWindow.getSize()[1]
+  console.log(windowWidth - data.pageX)
+  eventWindow.setSize(windowWidth + (windowWidth - data.pageX), windowHeight + (windowHeight - data.pageY))
+})
+
+
 
 ipcMain.on('reduce-window', (event) => {
     event.sender.getOwnerBrowserWindow().minimize()
