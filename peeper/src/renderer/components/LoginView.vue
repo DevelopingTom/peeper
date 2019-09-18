@@ -18,31 +18,42 @@
   export default {
     name: 'login-view',
     mounted: function() {
-      
+      if (localStorage.getItem('myId')) {
+        console.log(localStorage.getItem('myId'))
+        document.getElementById('loginform').style.display = 'none';
+        socket.emit("login by id", {id: localStorage.getItem('myId')});
+      }
       socket.on('connect_error', function(err) {
         document.getElementById('alert').style.display = 'block'
         document.getElementById('alert').innerHTML = "Error connecting to server";
       });
         
       socket.on('error login', function(msg){
+        document.getElementById('loginform').style.display = 'flex';
         document.getElementById('alert').style.display = 'block'
         document.getElementById('alert').innerHTML = msg;
       });
 
       var that = this;
       socket.on('your infos', function(msg){
+        if (msg.remember) {
+          localStorage.setItem('myId', msg.id);
+        }
         that.$router.push('/main');
       });
     },
     methods: {
         login(e) {
-            console.log('submit')
-            socket.emit("login", {name: document.getElementById("name").value});
+            let userInfo = {name: document.getElementById("name").value};
+            userInfo.remember = document.getElementById("remember").checked;
+            if (document.getElementById("remember").checked === false) {
+              localStorage.removeItem('myId');
+            }
+            socket.emit("login", userInfo);
             e.preventDefault()
         }
     }
   }
-
 
 </script>
 <style>

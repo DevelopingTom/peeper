@@ -9,12 +9,9 @@
       </div>
       <div class="sidenav" id="firstLeftBar">
         <div class="control" id="resizeSideBar"></div>
-        <div class="title">Projects</div>
+        <div class="title">Servers</div>
         <div class="group" id="projects">
-          <div class="project">About</div>
-          <div class="project">Services</div>
-          <div class="project">Clients</div>
-          <div class="project">Contact</div>
+          <div class="project">Crispy guacamole</div>
         </div>
         <div class="title">Users List</div>
         <div class="group" >
@@ -45,7 +42,6 @@
     name: 'main-view',
     components: { User, Message },
     mounted: function() {
-        
       let that = this;
       this.users = [];
       this.messages = [];
@@ -66,9 +62,21 @@
       socket.on('users', function(msg){
           addUsers(msg);
       });
+      socket.on('user status', function(msg){
+        console.log(msg)
+        console.log(users)
+        for (let index = 0; index < users.length; index++) {
+          const user = users[index];
+          
+          if (user.id === msg.id) {
+            user.status = msg.status;
+          }
+        }
+      });
       socket.on('history', function(msg){
           addMessages(msg);
       });
+
 
       function addUser(user) {
         let usrtmp = {}
