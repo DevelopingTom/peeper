@@ -23,10 +23,10 @@
       </div>
 
       <div class="main click-on">
-        <div class="chatContainer">
+        <div class="chatContainer" id="chatContainer">
           <message id="message-list" v-for="message in messages" v-bind:message="message"></message>
         </div>
-        <div class="inputContainer"><div class="inputControls"><div contenteditable="true" type="text" class="chatInput"></div>
+        <div class="inputContainer"><div class="inputControls"><div contenteditable="true" type="text" class="chatInput" id="mainInput"></div>
         <div @click="createWindow" class="chatControls"><i class="material-icons">gif</i></div>
         <div @click="createWindow" class="chatControls"><i class="material-icons">tag_faces</i></div>
         <div @click="createWindow" class="chatControls"><i class="material-icons">aspect_ratio</i></div>
@@ -39,70 +39,111 @@
 <script>
   import User from './MainView/User'
   import Message from './MainView/Message'
-  import tippy from 'tippy.js'
+  import socket from './socket.js'
 
-  let mouseDown = false
-  let diffMargin = 0
-  window.addEventListener('load', function () {
-    document.getElementById('resizeSideBar').onmousedown = function(e) {
-      mouseDown = true
-      let oldWidth = document.getElementById('firstLeftBar').offsetWidth
-      diffMargin = oldWidth - e.pageX
-    }
-    document.addEventListener ('mousemove',  function(e) {
-      if (mouseDown) {
-        console.log('diff ' + diffMargin)
-        let newWidth = e.pageX + diffMargin
-        console.log(newWidth)
-        document.getElementById('firstLeftBar').style.width = newWidth + 'px'
-      }
-    })
-    document.addEventListener ('mouseup',   mouseupListener);
-    function mouseupListener (e) {
-      mouseDown = false
-    }
-
-  }, false);
-
-  let messages = [
-    {timestamp: 1547584036, userId: 1, typeMessage: Message.TYPES.text, content: 'Hey'},
-    {timestamp: 1547584136, userId: 2, typeMessage: Message.TYPES.text, content: 'Yo'},
-    {timestamp: 1547584236, userId: 1, typeMessage: Message.TYPES.text, content: 'Whats up'},
-    {timestamp: 1547584336, userId: 3, typeMessage: Message.TYPES.text, content: 'Nothing'},
-    {timestamp: 1547584436, userId: 1, typeMessage: Message.TYPES.text, content: 'alright.'},
-    {timestamp: 1547584536, userId: 1, typeMessage: Message.TYPES.text, content: 'Bye'},
-    {timestamp: 1547584636, userId: 1, typeMessage: Message.TYPES.meta, content: 'left the channel'},
-    {timestamp: 1547584586, userId: 2, typeMessage: Message.TYPES.text, content: 'Bye'},
-    {timestamp: 1547584636, userId: 2, typeMessage: Message.TYPES.meta, content: 'wants to share screen'},
-  ]
-
-  let users = [
-    {id: 1, status: User.status.active, active: true, name: 'Vivacious', icon: "https://png.pngtree.com/svg/20161017/assistant_38292.png"},
-    {id: 2, status: User.status.active, unseen: true, name: 'Inglorious', icon: "https://png.pngtree.com/svg/20170331/businessman_863430.png", messages: "5"},
-    {id: 3, status: User.status.inactive, name: 'Dooda', icon: "https://cdn4.iconfinder.com/data/icons/green-shopper/1068/user.png"}
-  ]
-  let usersById = {}
-  for (let user of users) {
-    usersById[user.id] = user
-  }
-  let prevMessage
-  for (let message of messages){
-    if (message.userId in usersById) {
-      message.author = usersById[message.userId]
-    }
-    if (prevMessage && prevMessage.userId != message.userId || !prevMessage) {
-      message.isFirstFromAuthor = true
-    }
-    prevMessage = message
-  }
   export default {
     name: 'main-view',
     components: { User, Message },
+    mounted: function() {
+        
+      let that = this;
+      this.users = [];
+      this.messages = [];
+      let usersById = {};
+
+      socket.on('new user', function(msg){
+        console.log('new', msg)
+        addUser(msg)
+      });
+
+      socket.on('chat message', function(msg){
+          console.log(msg)
+          addMessage(msg);
+          var objDiv = document.getElementById("chatContainer");
+          objDiv.scrollTop = objDiv.scrollHeight;
+      });
+
+      socket.on('users', function(msg){
+          addUsers(msg);
+      });
+      socket.on('history', function(msg){
+          addMessages(msg);
+      });
+
+      function addUser(user) {
+        let usrtmp = {}
+        usrtmp[user.id] = user;
+        addUsers(usrtmp);
+      }
+      function addUsers(msgs) {
+        for (var userId in msgs) {
+          that.users.push(msgs[userId]);
+        }
+        for (let user of that.users) {
+          usersById[user.id] = user
+        }
+        console.log("users", usersById)
+      }
+      function addMessage(msg) {
+        addMessages([msg]);
+      }0
+
+      let prevMessage;
+      function addMessages(msgs) {
+        for (let msg of msgs){
+          that.messages.push(msg);
+        }
+        for (let message of that.messages){
+          if (message.userId in usersById) {
+            message.author = usersById[message.userId]
+          } else {
+            message.author = {name: message.name, icon: message.icon}
+          }
+          if (prevMessage && prevMessage.userId != message.userId || !prevMessage || message.timestamp > prevMessage.timestamp + 3600) {
+            message.isFirstFromAuthor = true
+          }
+          prevMessage = message
+        }
+      } 
+
+      socket.emit('connect to server')
+      let mouseDown = false
+      let diffMargin = 
+      document.getElementById('resizeSideBar').onmousedown = function(e) {
+        mouseDown = true
+        let oldWidth = document.getElementById('firstLeftBar').offsetWidth
+        diffMargin = oldWidth - e.pageX
+      }
+      document.addEventListener ('mousemove',  function(e) {
+        if (mouseDown) {
+          console.log('diff ' + diffMargin)
+          let newWidth = e.pageX + diffMargin
+          console.log(newWidth)
+          document.getElementById('firstLeftBar').style.width = newWidth + 'px'
+        }
+      })
+      document.addEventListener ('mouseup',   mouseupListener);
+      function mouseupListener (e) {
+        mouseDown = false
+      }
+      document.getElementById('mainInput').addEventListener('keypress', function (e) {
+        console.log(e)
+        var key = e.which || e.keyCode;
+        if (key === 13) { // 13 is enter
+          let msg = {timestamp: Date.now() / 1000, content: document.getElementById('mainInput').innerHTML}
+          socket.emit('message', msg);
+          document.getElementById('mainInput').innerHTML  = '';
+          e.preventDefault()
+        }
+      });
+        
+    },
     data: function() {
-    return {
-      users: users,
-      messages: messages
-    }},
+      return {
+        users: [],
+        messages: []
+      }
+    },
     methods: {
       createWindow() {
         const ipcRenderer = require('electron').ipcRenderer

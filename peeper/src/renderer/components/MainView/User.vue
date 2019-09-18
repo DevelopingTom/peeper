@@ -26,6 +26,7 @@
           'active',
           'inactive',
           'absent',
+          'disconnected'
         ]
         return "status " + statusClasses[this.user.status]
       },
@@ -74,7 +75,7 @@
   }
   .user .status.absent {
     border: 2px solid #696969;
-    background: #191919;
+    background: #d3d3d3;
   }
 
   .user .icon img {

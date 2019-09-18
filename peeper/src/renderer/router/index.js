@@ -7,6 +7,11 @@ export default new Router({
   routes: [
     {
       path: '/',
+      name: 'login-view',
+      component: require('@/components/LoginView').default
+    },
+    {
+      path: '/main',
       name: 'main-view',
       component: require('@/components/MainView').default
     },
