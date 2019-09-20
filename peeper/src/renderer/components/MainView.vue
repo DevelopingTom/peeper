@@ -134,9 +134,7 @@
       }
       document.addEventListener ('mousemove',  function(e) {
         if (mouseDown) {
-          console.log('diff ' + diffMargin)
           let newWidth = e.pageX + diffMargin
-          console.log(newWidth)
           document.getElementById('firstLeftBar').style.width = newWidth + 'px'
         }
       })
