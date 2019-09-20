@@ -79,20 +79,20 @@ ipcMain.on('capture-zone', () => {
   captureWindow.loadURL(`http://localhost:9080/#/capture`)
   let punchersave;
   let portsave;
-  findPort(function(port) {
-    portsave = port;
-    registerPort(port, "server", null);
-    socket.on("client video", function(data) {
-      console.log("someone wants to connect", data)
-      updHole(port, {addr: data.ip, port: data.port}, function(puncher) {
-        punchersave = puncher;
-      });
-    });    
-  });
+ 
   captureWindow.once('ready-to-show', () => {
     captureWindow.show()
+    findPort(function(port) {
+      portsave = port;
+      registerPort(port, "server", null);
+      socket.on("client video", function(data) {
+        console.log("someone wants video", data)
+        updHole(port, {addr: data.ip, port: data.port}, function(puncher) {
+          punchersave = puncher;
+        });
+      });    
+    });
   })
-
   captureWindow.on('move', (e) =>{
     captureWindow.webContents.send('window-move')
   })
@@ -102,56 +102,11 @@ ipcMain.on('capture-zone', () => {
     }
     socket.emit("unregister me", {type: "server", id: myId, port: portsave});
   })
-  
 })
+
 ipcMain.on('socketId', (event, socketId) => {
   myId = socketId;
 })
-
-
-function registerPort(port, type, src) {
-  socket.emit("register me", {type: type, id: myId, port: port, src: src});
-}
-
-function updHole(myport, peer, callback) {
-  console.log("punching")
-  const socketUdp = dgram.createSocket('udp4');
-  socketUdp.on('error', (error) => {
-    console.error(error)
-  } );
-  socketUdp.on('message', (message, rinfo) => {
-    console.log(message)
-  });
-  socketUdp.on('listening', () => {
-    // puncher config
-    const puncher = new UdpHolePuncher(socketUdp);
-    // when connection is established, send dummy message
-    puncher.on('connected', () => {
-      const message = new Buffer('hello');
-      socketUdp.send(message, 0, message.length, peer.port, peer.addr);
-    });
-    // error handling code
-    puncher.on('error', (error) => {
-      console.error("punch error", error)
-    });
-    // connect to peer (using its public address and port)
-    puncher.connect(peer.addr, peer.port);
-    callback(puncher);
-  });
-  // bind socketUdp
-  socketUdp.bind(myport);
-}
-let firstPort = 3000
-function findPort(callback) {
-  var portscanner = require('portscanner')
-  portscanner.findAPortNotInUse(firstPort, 4000, '127.0.0.1', function(error, portAvailable) {
-    callback(portAvailable)
-  })
-  firstPort ++;
-}
-
-function startReading(server, callback) {
-}
 
 ipcMain.on('read-video', (event, dataid) => {
   let videoWindow = new BrowserWindow({
@@ -190,6 +145,49 @@ ipcMain.on('read-video', (event, dataid) => {
   
   videoWindow.loadURL(`http://localhost:9080/#/video`);
 })
+
+
+function registerPort(port, type, src) {
+  socket.emit("register me", {type: type, id: myId, port: port, src: src});
+}
+
+function updHole(myport, peer, callback) {
+  console.log("punching ", peer)
+  const socketUdp = dgram.createSocket('udp4');
+  socketUdp.on('error', (error) => {
+    console.error(error)
+  } );
+  socketUdp.on('message', (message, rinfo) => {
+    console.log(message)
+  });
+  socketUdp.on('listening', () => {
+    // puncher config
+    const puncher = new UdpHolePuncher(socketUdp);
+    // when connection is established, send dummy message
+    puncher.on('connected', () => {
+      const message = new Buffer('hello');
+      socketUdp.send(message, 0, message.length, peer.port, peer.addr);
+    });
+    // error handling code
+    puncher.on('error', (error) => {
+      console.error("punch error", error)
+    });
+    // connect to peer (using its public address and port)
+    puncher.connect(peer.addr, peer.port);
+    callback(puncher);
+  });
+  // bind socketUdp
+  socketUdp.bind(parseInt(myport));
+}
+let firstPort = 3000
+function findPort(callback) {
+  var portscanner = require('portscanner')
+  portscanner.findAPortNotInUse(firstPort, 4000, '127.0.0.1', function(error, portAvailable) {
+    callback(portAvailable)
+  })
+  firstPort ++;
+}
+
 
 ipcMain.on('maximize-window', (event, data) => {
   console.log(data)
