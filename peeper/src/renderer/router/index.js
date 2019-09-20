@@ -21,6 +21,11 @@ export default new Router({
       component: require('@/components/CaptureWindow').default
     },
     {
+      path: '/video',
+      name: 'video-window',
+      component: require('@/components/VideoWindow').default
+    },
+    {
       path: '*',
       redirect: '/'
     }

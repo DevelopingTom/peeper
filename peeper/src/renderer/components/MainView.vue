@@ -24,7 +24,7 @@
           <message id="message-list" v-for="message in messages" v-bind:message="message"></message>
         </div>
         <div class="inputContainer"><div class="inputControls"><div contenteditable="true" type="text" class="chatInput" id="mainInput"></div>
-        <div @click="createWindow" class="chatControls"><i class="material-icons">gif</i></div>
+        <div  class="chatControls"><i class="material-icons">gif</i></div>
         <div @click="createWindow" class="chatControls"><i class="material-icons">tag_faces</i></div>
         <div @click="createWindow" class="chatControls"><i class="material-icons">aspect_ratio</i></div>
       </div></div>
@@ -59,22 +59,32 @@
           objDiv.scrollTop = objDiv.scrollHeight;
       });
 
+
       socket.on('users', function(msg){
           addUsers(msg);
       });
       socket.on('user status', function(msg){
-        console.log(msg)
-        console.log(users)
-        for (let index = 0; index < users.length; index++) {
-          const user = users[index];
+        for (let index = 0; index < that.users.length; index++) {
+          const user = that.users[index];
           
           if (user.id === msg.id) {
             user.status = msg.status;
+            user.serving = msg.serving;
           }
         }
       });
       socket.on('history', function(msg){
           addMessages(msg);
+      });
+      socket.on('user disconnected', function(msg){
+        for (let index = 0; index < that.users.length; index++) {
+          const user = that.users[index];
+          
+          if (user.id === msg.id) {
+            that.users.splice(index, 1);
+            return;
+          }
+        }
       });
 
 

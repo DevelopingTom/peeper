@@ -6,13 +6,21 @@
     </div>
     <div class="name">{{ user.name }}</div>
     <div v-if="user.messages" class="messages">{{ user.messages }}</div>
+    <div v-if="user.serving" @click="createVideoWindow" class="serving"><i class="material-icons">airplay</i></div>
   </div>
 </template>
 
 <script>
+  import socket from '../socket.js'
   export default {
     props: {
       user: Object
+    },
+    mounted: function() {
+      if (this.user.id === socket.id) {
+        this.user.me = true;
+      }
+      console.log(this.user);
     },
     status: {
       active: 0,
@@ -31,8 +39,13 @@
         return "status " + statusClasses[this.user.status]
       },
       getClassUser(){
-        return  "user slideDown " + (this.user.active ? "active" : "") + " " + (this.user.unseen ? "unseen" : "") + " "
-      }
+        return (this.user.id === socket.id ? "me ": "") +  "user slideDown " + (this.user.active ? "active" : "") + " " + (this.user.unseen ? "unseen" : "") + " "
+      },
+      createVideoWindow() {
+        const ipcRenderer = require('electron').ipcRenderer
+        console.log(this.user)
+        ipcRenderer.send('read-video', {id: this.user.id})
+      },
     }
   }
 </script>
@@ -52,6 +65,9 @@
   .user .icon{
     margin-right: 6px;
     position: relative;
+  }
+  .user.me{
+    background: #a8ceff;
   }
   .user .status {
     border-radius: 8px;
@@ -110,6 +126,10 @@
     font-size: 9px;
     text-align: center;
     line-height: 11px;
+  }
+  .user .serving {
+    color: #d64e55;
+    margin-left: auto;
   }
   .slideDown{
     animation: slideDown 0.8s ease;

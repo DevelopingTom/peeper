@@ -1,5 +1,13 @@
 import { app, BrowserWindow } from 'electron'
 
+const dgram = require('dgram');
+const UdpHolePuncher = require('udp-hole-puncher');
+
+
+
+import ioClient from 'socket.io-client'
+const socket = ioClient("http://95.85.46.198");
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -31,6 +39,8 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  
+
 }
 
 app.on('ready', createWindow)
@@ -46,7 +56,7 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
+let myId = null;
 const ipcMain = require('electron').ipcMain
 ipcMain.on('capture-zone', () => {
   let captureWindow = new BrowserWindow({
@@ -58,16 +68,27 @@ ipcMain.on('capture-zone', () => {
     show: false,
     frame: false,
     transparent: true,
+    title: "Capture",
     vibrancy: 'ultra-dark',
     devtools: false,
     alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: true
     }
-  })
-
+  })  
   captureWindow.loadURL(`http://localhost:9080/#/capture`)
-
+  let punchersave;
+  let portsave;
+  findPort(function(port) {
+    portsave = port;
+    registerPort(port, "server", null);
+    socket.on("client video", function(data) {
+      console.log("someone wants to connect", data)
+      updHole(port, {addr: data.ip, port: data.port}, function(puncher) {
+        punchersave = puncher;
+      });
+    });    
+  });
   captureWindow.once('ready-to-show', () => {
     captureWindow.show()
   })
@@ -75,18 +96,100 @@ ipcMain.on('capture-zone', () => {
   captureWindow.on('move', (e) =>{
     captureWindow.webContents.send('window-move')
   })
-
-  function computeRects(){
-    let rect = captureWindow.webContents.getOwnerBrowserWindow().getBounds()
-    return [
-      {x: 0, y: 0, width: 1920, height: 30},
-      {x: 0, y: 0, width: 3, height: rect.height},
-      {x: 0, y: rect.height - 3, width: rect.width, height: 3},
-      {x: rect.width - 3, y: 0, width: 3, height: rect.height}
-    ]
-  }
+  captureWindow.on('closed', () => {
+    if (punchersave) {
+      punchersave.close()
+    }
+    socket.emit("unregister me", {type: "server", id: myId, port: portsave});
+  })
+  
+})
+ipcMain.on('socketId', (event, socketId) => {
+  myId = socketId;
 })
 
+
+function registerPort(port, type, src) {
+  socket.emit("register me", {type: type, id: myId, port: port, src: src});
+}
+
+function updHole(myport, peer, callback) {
+  console.log("punching")
+  const socketUdp = dgram.createSocket('udp4');
+  socketUdp.on('error', (error) => {
+    console.error(error)
+  } );
+  socketUdp.on('message', (message, rinfo) => {
+    console.log(message)
+  });
+  socketUdp.on('listening', () => {
+    // puncher config
+    const puncher = new UdpHolePuncher(socketUdp);
+    // when connection is established, send dummy message
+    puncher.on('connected', () => {
+      const message = new Buffer('hello');
+      socketUdp.send(message, 0, message.length, peer.port, peer.addr);
+    });
+    // error handling code
+    puncher.on('error', (error) => {
+      console.error("punch error", error)
+    });
+    // connect to peer (using its public address and port)
+    puncher.connect(peer.addr, peer.port);
+    callback(puncher);
+  });
+  // bind socketUdp
+  socketUdp.bind(myport);
+}
+let firstPort = 3000
+function findPort(callback) {
+  var portscanner = require('portscanner')
+  portscanner.findAPortNotInUse(firstPort, 4000, '127.0.0.1', function(error, portAvailable) {
+    callback(portAvailable)
+  })
+  firstPort ++;
+}
+
+function startReading(server, callback) {
+}
+
+ipcMain.on('read-video', (event, dataid) => {
+  let videoWindow = new BrowserWindow({
+    height: 500,
+    width: 500,
+    useContentSize: true,
+    show: false,
+    frame: true,
+    devtools: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+  let portsave;
+  let punchersave;
+  videoWindow.once('ready-to-show', () => {
+    videoWindow.show();
+    findPort(function(port) {
+      portsave = port;
+      registerPort(port, "client", dataid);
+      socket.on("server address", function(data) {
+        console.log("got a server", data)
+        updHole(port, {addr: data.ip, port: data.port}, function(puncher) {
+          punchersave = puncher;
+        });
+      });    
+    });
+  })
+  
+  videoWindow.on('closed', () => {
+    if (punchersave) {
+      punchersave.close()
+    }
+    socket.emit("unregister me", {type: "client", id: myId, port: portsave});
+  })
+  
+  videoWindow.loadURL(`http://localhost:9080/#/video`);
+})
 
 ipcMain.on('maximize-window', (event, data) => {
   console.log(data)

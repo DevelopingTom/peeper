@@ -62,35 +62,34 @@
   const electron = require('electron')
   var timer;
   const ipcRenderer = electron.ipcRenderer
-  ipcRenderer.on("window-move", () => {
-    clearTimeout(timer)
-    timer = setTimeout(()=>{document.getElementById("svg-wrapper").classList.remove('dragging');}, 300)
-    document.getElementById("svg-wrapper").classList.add('dragging');
-  })
+
   export default {
     mounted: function() {
-      
-      console.log('mounted')
-      
-      let mouseDown = false
+      ipcRenderer.on("window-move", () => {
+        clearTimeout(timer)
+        timer = setTimeout(()=>{document.getElementById("svg-wrapper").classList.remove('dragging');}, 300)
+        document.getElementById("svg-wrapper").classList.add('dragging');
+      })
       const TransparencyMouseFix = require('electron-transparency-mouse-fix')
       const fix = new TransparencyMouseFix({
-        log: true,
+        log: false,
         fixPointerEvents: 'auto'
       })
-      document.getElementById('resize-corner').onmousedown = function(e) {
-        mouseDown = true
-      }
-      document.getElementById('resize-corner').onmousemove = function(e) {
-        if (mouseDown) {
-          ipcRenderer.send('resize-window', {screenX: e.screenX, screenY: e.screenY, pageX: e.pageX, pageY: e.pageY})
-        }
-      }
-      document.addEventListener ('mouseup',   mouseupListener);
-      function mouseupListener (e) {
-        console.log('upppppp')
-        mouseDown = false
-      }
+      
+      // let mouseDown = false
+      // document.getElementById('resize-corner').onmousedown = function(e) {
+      //   mouseDown = true
+      // }
+      // document.getElementById('resize-corner').onmousemove = function(e) {
+      //   if (mouseDown) {
+      //     ipcRenderer.send('resize-window', {screenX: e.screenX, screenY: e.screenY, pageX: e.pageX, pageY: e.pageY})
+      //   }
+      // }
+      // document.addEventListener ('mouseup',   mouseupListener);
+      // function mouseupListener (e) {
+      //   console.log('upppppp')
+      //   mouseDown = false
+      // }
     },
     name: 'capture-window',
     methods: {

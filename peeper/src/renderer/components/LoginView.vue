@@ -15,11 +15,12 @@
 <script>
 
   import socket from './socket.js'
+  
+  const ipcRenderer = require('electron').ipcRenderer
   export default {
     name: 'login-view',
     mounted: function() {
       if (localStorage.getItem('myId')) {
-        console.log(localStorage.getItem('myId'))
         document.getElementById('loginform').style.display = 'none';
         socket.emit("login by id", {id: localStorage.getItem('myId')});
       }
@@ -36,6 +37,7 @@
 
       var that = this;
       socket.on('your infos', function(msg){
+        ipcRenderer.send('socketId', msg.id)
         if (msg.remember) {
           localStorage.setItem('myId', msg.id);
         }
